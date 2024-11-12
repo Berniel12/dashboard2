@@ -18,16 +18,16 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 transition-opacity"
           onClick={onClose}
         />
 
         {/* Modal panel */}
-        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+        <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
           <div className="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
-              className="rounded-md bg-white text-gray-400 hover:text-gray-500"
+              className="rounded-md bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-white"
               onClick={onClose}
             >
               <X className="h-6 w-6" />
@@ -36,7 +36,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
           <div className="sm:flex sm:items-start">
             <div className="mt-3 w-full sm:mt-0 sm:text-left">
-              <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white mb-4">
                 {title}
               </h3>
               {children}

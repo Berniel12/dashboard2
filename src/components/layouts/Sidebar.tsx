@@ -25,9 +25,9 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200">
-      <div className="flex h-16 items-center px-6 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800">Broker Portal</h2>
+    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+      <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Broker Portal</h2>
       </div>
       <nav className="p-4">
         <div className="space-y-1">
@@ -41,12 +41,14 @@ export default function Sidebar() {
                 href={item.href}
                 className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                   isActive 
-                    ? 'bg-gray-100 text-gray-900' 
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 <Icon className={`mr-3 h-5 w-5 ${
-                  isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-900'
+                  isActive 
+                    ? 'text-gray-900 dark:text-white' 
+                    : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'
                 }`} />
                 {item.name}
               </Link>

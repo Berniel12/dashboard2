@@ -30,37 +30,37 @@ const notifications = [
 
 export default function NotificationsPanel() {
   return (
-    <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-      <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Notifications</h2>
-        <Bell className="h-5 w-5 text-gray-400" />
+    <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 rounded-xl overflow-hidden">
+      <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">Notifications</h2>
+        <Bell className="h-5 w-5 text-gray-400 dark:text-gray-300" />
       </div>
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {notifications.map((notification) => {
           const Icon = notification.icon;
           return (
-            <div key={notification.id} className="p-4 hover:bg-gray-50">
+            <div key={notification.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
               <div className="flex space-x-3">
                 <div className={`
                   flex-shrink-0 rounded-full p-2
-                  ${notification.type === 'success' ? 'bg-green-100' :
-                    notification.type === 'warning' ? 'bg-yellow-100' :
-                    'bg-blue-100'}
+                  ${notification.type === 'success' ? 'bg-green-100 dark:bg-green-900/50' :
+                    notification.type === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/50' :
+                    'bg-blue-100 dark:bg-blue-900/50'}
                 `}>
                   <Icon className={`h-5 w-5
-                    ${notification.type === 'success' ? 'text-green-600' :
-                      notification.type === 'warning' ? 'text-yellow-600' :
-                      'text-blue-600'}
+                    ${notification.type === 'success' ? 'text-green-600 dark:text-green-400' :
+                      notification.type === 'warning' ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-blue-600 dark:text-blue-400'}
                   `} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {notification.title}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {notification.description}
                   </p>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                     {notification.time}
                   </p>
                 </div>

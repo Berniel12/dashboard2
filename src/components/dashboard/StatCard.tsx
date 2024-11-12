@@ -11,11 +11,13 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, trend, trendDirection, description }: StatCardProps) {
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition-shadow">
+    <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</h3>
         <div className={`flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-          trendDirection === 'up' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+          trendDirection === 'up' 
+            ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-400' 
+            : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-400'
         }`}>
           {trendDirection === 'up' ? (
             <ArrowUp className="mr-1 h-3 w-3" />
@@ -25,9 +27,9 @@ export default function StatCard({ title, value, trend, trendDirection, descript
           {trend}
         </div>
       </div>
-      <p className="mt-4 text-4xl font-bold text-gray-900">{value}</p>
+      <p className="mt-4 text-4xl font-bold text-gray-900 dark:text-white">{value}</p>
       {description && (
-        <p className="mt-2 text-sm text-gray-500">{description}</p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{description}</p>
       )}
     </div>
   );

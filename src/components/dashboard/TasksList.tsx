@@ -30,16 +30,16 @@ const tasks = [
 
 export default function TasksList() {
   return (
-    <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-      <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Pending Tasks</h2>
-        <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+    <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 rounded-xl overflow-hidden">
+      <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">Pending Tasks</h2>
+        <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium px-2.5 py-0.5 rounded-full">
           {tasks.length} tasks
         </span>
       </div>
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {tasks.map((task) => (
-          <div key={task.id} className="p-4 hover:bg-gray-50">
+          <div key={task.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 mt-1">
                 {task.status === 'pending' ? (
