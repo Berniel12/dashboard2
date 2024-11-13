@@ -1,153 +1,112 @@
 "use client";
 
-import React, { useState } from 'react';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
-import StatCard from '../../components/dashboard/StatCard';
-import DeclarationsTable from '../../components/dashboard/DeclarationsTable';
-import TasksList from '../../components/dashboard/TasksList';
-import NotificationsPanel from '../../components/dashboard/NotificationsPanel';
-import Modal from '@/components/ui/Modal';
-import NewDeclarationForm from '@/components/declarations/NewDeclarationForm';
-import HSCodeLookup from '@/components/customs/HSCodeLookup';
-import { FileText, Calculator, Search, Upload, AlertTriangle } from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
+import { FileText, Search, Calculator, Upload } from 'lucide-react';
+
+const stats = [
+  {
+    title: "Active Declarations",
+    value: "24",
+    change: "+12%",
+    description: "Declarations in progress"
+  },
+  {
+    title: "Pending Reviews",
+    value: "8",
+    change: "-3",
+    description: "Awaiting approval"
+  },
+  {
+    title: "Monthly Revenue",
+    value: "$156K",
+    change: "+23%",
+    description: "This month's earnings"
+  },
+  {
+    title: "Compliance Rate",
+    value: "98.5%",
+    change: "+0.5%",
+    description: "Declaration accuracy"
+  }
+];
+
+const quickActions = [
+  {
+    name: "New Declaration",
+    href: "/dashboard/declarations/new",
+    icon: FileText,
+    color: "bg-blue-100 text-blue-600"
+  },
+  {
+    name: "HS Code Lookup",
+    href: "/dashboard/hs-lookup",
+    icon: Search,
+    color: "bg-purple-100 text-purple-600"
+  },
+  {
+    name: "Duty Calculator",
+    href: "/dashboard/calculator",
+    icon: Calculator,
+    color: "bg-green-100 text-green-600"
+  },
+  {
+    name: "Upload Documents",
+    href: "/dashboard/documents/upload",
+    icon: Upload,
+    color: "bg-orange-100 text-orange-600"
+  }
+];
 
 export default function DashboardPage() {
-  const [isHSModalOpen, setIsHSModalOpen] = useState(false);
-  const [isDeclarationModalOpen, setIsDeclarationModalOpen] = useState(false);
-
-  const handleNewDeclaration = (data: any) => {
-    console.log('New Declaration Data:', data);
-    setIsDeclarationModalOpen(false);
-  };
-
   return (
-    <DashboardLayout>
-      <div className="space-y-8">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Active Declarations"
-            value="24"
-            trend="+12%"
-            trendDirection="up"
-            description="Declarations in progress"
-          />
-          <StatCard
-            title="Pending Reviews"
-            value="8"
-            trend="-3"
-            trendDirection="down"
-            description="Awaiting approval"
-          />
-          <StatCard
-            title="Monthly Revenue"
-            value="$156K"
-            trend="+23%"
-            trendDirection="up"
-            description="This month's earnings"
-          />
-          <StatCard
-            title="Compliance Rate"
-            value="98.5%"
-            trend="+0.5%"
-            trendDirection="up"
-            description="Declaration accuracy"
-          />
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center space-x-4">
+          <button className="p-2 rounded-full hover:bg-gray-100">
+            {/* Theme toggle icon */}
+          </button>
+          <button className="p-2 rounded-full hover:bg-gray-100">
+            {/* Notifications icon */}
+          </button>
         </div>
-
-        {/* Quick Actions */}
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button 
-              onClick={() => setIsDeclarationModalOpen(true)}
-              className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-gray-900">New Declaration</span>
-            </button>
-            
-            <button 
-              onClick={() => setIsHSModalOpen(true)}
-              className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <div className="p-3 bg-indigo-100 rounded-lg">
-                <Search className="h-6 w-6 text-indigo-600" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-gray-900">HS Code Lookup</span>
-            </button>
-            
-            <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition-colors">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Calculator className="h-6 w-6 text-green-600" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-gray-900">Duty Calculator</span>
-            </button>
-            
-            <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition-colors">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Upload className="h-6 w-6 text-purple-600" />
-              </div>
-              <span className="mt-2 text-sm font-medium text-gray-900">Upload Documents</span>
-            </button>
-          </div>
-        </div>
-
-        {/* New Declaration Modal */}
-        <Modal
-          isOpen={isDeclarationModalOpen}
-          onClose={() => setIsDeclarationModalOpen(false)}
-          title="Create New Declaration"
-        >
-          <NewDeclarationForm
-            onSubmit={handleNewDeclaration}
-            onCancel={() => setIsDeclarationModalOpen(false)}
-          />
-        </Modal>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Declarations */}
-          <div className="lg:col-span-2 space-y-8">
-            <DeclarationsTable />
-            
-            {/* Compliance Alerts */}
-            <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl overflow-hidden">
-              <div className="border-b border-gray-200 px-6 py-4 flex items-center">
-                <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
-                <h2 className="text-base font-semibold text-gray-900">Compliance Alerts</h2>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="flex items-center text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg">
-                  <span>⚠️</span>
-                  <span className="ml-2">3 declarations require additional documentation</span>
-                </div>
-                <div className="flex items-center text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
-                  <span>ℹ️</span>
-                  <span className="ml-2">New tariff rates effective from next month</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Tasks & Notifications */}
-          <div className="space-y-8">
-            <TasksList />
-            <NotificationsPanel />
-          </div>
-        </div>
-
-        {/* HS Code Lookup Modal */}
-        <Modal
-          isOpen={isHSModalOpen}
-          onClose={() => setIsHSModalOpen(false)}
-          title="HS Code Lookup"
-        >
-          <HSCodeLookup />
-        </Modal>
       </div>
-    </DashboardLayout>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.title} className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-gray-500 text-sm">{stat.title}</h3>
+              <span className={`text-sm ${
+                stat.change.startsWith('+') ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {stat.change}
+              </span>
+            </div>
+            <p className="text-3xl font-bold mb-1">{stat.value}</p>
+            <p className="text-gray-500 text-sm">{stat.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {quickActions.map((action) => (
+          <Link
+            key={action.name}
+            href={action.href}
+            className="flex flex-col items-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className={`p-3 rounded-full ${action.color} mb-3`}>
+              <action.icon className="w-6 h-6" />
+            </div>
+            <span className="text-sm font-medium">{action.name}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 } 

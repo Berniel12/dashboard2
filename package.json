@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^4.29.9",
-    "lucide-react": "^0.456.0",
+    "framer-motion": "^10.16.4",
+    "lucide-react": "^0.284.0",
     "next": "14.0.3",
     "openai": "^4.71.1",
     "pdfjs-dist": "^3.11.174",
