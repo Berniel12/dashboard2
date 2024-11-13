@@ -46,6 +46,96 @@ export default function ClientsPage() {
       status: 'Pending',
       declarations: 0,
       lastActivity: '2024-03-13'
+    },
+    {
+      id: 'CLT-004',
+      name: 'MedTech Solutions',
+      email: 'operations@medtechsolutions.com',
+      phone: '+1 234 567 8903',
+      address: '321 Medical Center Way, Houston, TX',
+      status: 'Active',
+      declarations: 15,
+      lastActivity: '2024-03-15'
+    },
+    {
+      id: 'CLT-005',
+      name: 'Automotive Parts Inc.',
+      email: 'imports@autoparts.com',
+      phone: '+1 234 567 8904',
+      address: '567 Industrial Park, Detroit, MI',
+      status: 'Active',
+      declarations: 32,
+      lastActivity: '2024-03-14'
+    },
+    {
+      id: 'CLT-006',
+      name: 'Fashion Imports Co.',
+      email: 'orders@fashionimports.com',
+      phone: '+1 234 567 8905',
+      address: '890 Fashion Ave, New York, NY',
+      status: 'Inactive',
+      declarations: 8,
+      lastActivity: '2024-02-28'
+    },
+    {
+      id: 'CLT-007',
+      name: 'Green Energy Systems',
+      email: 'logistics@greenenergy.com',
+      phone: '+1 234 567 8906',
+      address: '123 Solar Road, Phoenix, AZ',
+      status: 'Active',
+      declarations: 12,
+      lastActivity: '2024-03-15'
+    },
+    {
+      id: 'CLT-008',
+      name: 'Food & Beverage Traders',
+      email: 'imports@fbtraders.com',
+      phone: '+1 234 567 8907',
+      address: '456 Gourmet Lane, Chicago, IL',
+      status: 'Active',
+      declarations: 45,
+      lastActivity: '2024-03-15'
+    },
+    {
+      id: 'CLT-009',
+      name: 'Chemical Solutions Ltd.',
+      email: 'regulatory@chemsolutions.com',
+      phone: '+1 234 567 8908',
+      address: '789 Laboratory Drive, New Jersey, NJ',
+      status: 'Pending',
+      declarations: 3,
+      lastActivity: '2024-03-12'
+    },
+    {
+      id: 'CLT-010',
+      name: 'Furniture Wholesale Co.',
+      email: 'shipping@furniturewholesale.com',
+      phone: '+1 234 567 8909',
+      address: '101 Warehouse Blvd, North Carolina, NC',
+      status: 'Active',
+      declarations: 28,
+      lastActivity: '2024-03-15'
+    },
+    {
+      id: 'CLT-011',
+      name: 'Sports Equipment Direct',
+      email: 'customs@sportsequip.com',
+      phone: '+1 234 567 8910',
+      address: '202 Stadium Way, Denver, CO',
+      status: 'Active',
+      declarations: 16,
+      lastActivity: '2024-03-14'
+    },
+    {
+      id: 'CLT-012',
+      name: 'Textile Imports LLC',
+      email: 'operations@textileimports.com',
+      phone: '+1 234 567 8911',
+      address: '303 Fashion District, Los Angeles, CA',
+      status: 'Inactive',
+      declarations: 5,
+      lastActivity: '2024-02-20'
     }
   ]);
 
