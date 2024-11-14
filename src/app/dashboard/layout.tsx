@@ -5,6 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { DashboardNav } from '@/components/navigation/DashboardNav';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -99,9 +100,12 @@ export default function DashboardLayout({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col">
         {/* Top Navigation Bar */}
         <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 h-16 flex items-center justify-between px-8">
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            {navigationItems.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
-          </h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {navigationItems.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
+            </h1>
+            <DashboardNav />
+          </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -110,12 +114,6 @@ export default function DashboardLayout({ children }: LayoutProps) {
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
                   3
                 </span>
-              </div>
-            </button>
-            <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
-            <button className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                <span className="text-indigo-700 dark:text-indigo-300 font-medium">JD</span>
               </div>
             </button>
           </div>
