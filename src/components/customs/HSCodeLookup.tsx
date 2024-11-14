@@ -13,6 +13,18 @@ interface AIClassification {
   }>;
 }
 
+interface HSCodeResult {
+  code: string;
+  description: string;
+  indent: number;
+  details: {
+    unitOfQuantity: string[];
+    generalRate: string;
+    specialRate: string;
+  };
+  children?: HSCodeResult[];
+}
+
 interface HSCodeLookupProps {
   onHSCodeSelect?: (code: string, description: string) => void;
 }
@@ -21,7 +33,7 @@ export const HSCodeLookup: React.FC<HSCodeLookupProps> = ({ onHSCodeSelect }) =>
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<Array<{ code: string; description: string }>>([]);
+  const [results, setResults] = useState<HSCodeResult[]>([]);
   const [aiResult, setAiResult] = useState<AIClassification | null>(null);
   const [activeTab, setActiveTab] = useState<'text' | 'image' | 'invoice'>('text');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -33,6 +45,7 @@ export const HSCodeLookup: React.FC<HSCodeLookupProps> = ({ onHSCodeSelect }) =>
     setLoading(true);
     setError(null);
     setAiResult(null);
+    setResults([]);
 
     try {
       console.log('Sending search request with description:', description);
@@ -73,6 +86,7 @@ export const HSCodeLookup: React.FC<HSCodeLookupProps> = ({ onHSCodeSelect }) =>
     setLoading(true);
     setError(null);
     setAiResult(null);
+    setResults([]);
 
     try {
       const formData = new FormData();
@@ -94,11 +108,39 @@ export const HSCodeLookup: React.FC<HSCodeLookupProps> = ({ onHSCodeSelect }) =>
       }
       
       if (uploadData.classification) {
-        setAiResult(uploadData.classification);
-      }
+        const code = uploadData.classification.primaryCode;
+        const hierarchicalResults: HSCodeResult[] = [{
+          code: code.slice(0, 2),
+          description: uploadData.classification.chapterDescription,
+          indent: 0,
+          details: {
+            unitOfQuantity: [],
+            generalRate: "",
+            specialRate: ""
+          },
+          children: [{
+            code: code.slice(0, 4),
+            description: uploadData.classification.headingDescription,
+            indent: 1,
+            details: {
+              unitOfQuantity: [],
+              generalRate: "",
+              specialRate: ""
+            },
+            children: [{
+              code: code,
+              description: uploadData.classification.subheadingDescription,
+              indent: 2,
+              details: {
+                unitOfQuantity: uploadData.classification.unitOfQuantity || [],
+                generalRate: uploadData.classification.generalRate || "",
+                specialRate: uploadData.classification.specialRate || ""
+              }
+            }]
+          }]
+        }];
 
-      if (uploadData.results) {
-        setResults(uploadData.results);
+        setResults(hierarchicalResults);
       }
 
     } catch (err) {
@@ -333,16 +375,60 @@ export const HSCodeLookup: React.FC<HSCodeLookupProps> = ({ onHSCodeSelect }) =>
           )}
 
           {results.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mt-6 animate-slideInFromBottom">
+            <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-100 mt-6">
               {results.map((result, index) => (
-                <div
-                  key={index}
-                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors animate-slideInFromRight"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  onClick={() => onHSCodeSelect?.(result.code, result.description)}
+                <div 
+                  key={index} 
+                  className="p-6 space-y-8 overflow-hidden"
                 >
-                  <div className="font-medium text-gray-900">{result.code}</div>
-                  <div className="text-gray-600 mt-1">{result.description}</div>
+                  {/* Chapter Level (2 digits) */}
+                  <div 
+                    className="transform translate-x-full animate-[slideIn_0.5s_ease-out_forwards]"
+                    style={{ animationDelay: `${index * 0.2}s` }}
+                  >
+                    <div className="flex items-center space-x-4 hover:bg-gray-50 p-4 rounded-lg transition-colors">
+                      <div className="w-24 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                        <span className="font-bold text-2xl text-gray-700">{result.code}</span>
+                      </div>
+                      <p className="text-gray-700 font-medium flex-1">{result.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Heading Level (4 digits) */}
+                  {result.children?.map((heading, hIndex) => (
+                    <div 
+                      key={hIndex}
+                      className="pl-12 transform translate-x-full animate-[slideIn_0.5s_ease-out_forwards]"
+                      style={{ animationDelay: `${(index * 0.2) + ((hIndex + 1) * 0.15)}s` }}
+                    >
+                      <div className="flex items-center space-x-4 hover:bg-blue-50/50 p-4 rounded-lg transition-colors">
+                        <div className="w-24 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                          <span className="font-bold text-2xl text-blue-600">{heading.code}</span>
+                        </div>
+                        <p className="text-gray-700 font-medium flex-1">{heading.description}</p>
+                      </div>
+
+                      {/* Subheading Level (6 digits) */}
+                      {heading.children?.map((subheading, sIndex) => (
+                        <div 
+                          key={sIndex}
+                          className="pl-12 mt-6 transform translate-x-full animate-[slideIn_0.5s_ease-out_forwards]"
+                          style={{ animationDelay: `${(index * 0.2) + ((hIndex + 1) * 0.15) + ((sIndex + 1) * 0.1)}s` }}
+                        >
+                          <div className="flex items-start space-x-4 hover:bg-indigo-50/50 p-4 rounded-lg transition-colors">
+                            <div className="min-w-[6rem] w-24 h-16 flex-shrink-0 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl flex items-center justify-center shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                              <span className="font-bold text-xl text-indigo-600 px-2 text-center break-words">
+                                {subheading.code}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 font-medium flex-1 break-words">
+                              {subheading.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

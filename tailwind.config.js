@@ -73,7 +73,27 @@ module.exports = {
           '0%': { width: '0%' },
           '50%': { width: '100%' },
           '100%': { width: '100%' }
-        }
+        },
+        fadeSlideIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateY(1rem) scale(0.98)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translateY(0) scale(1)'
+          },
+        },
+        slideIn: {
+          '0%': { 
+            transform: 'translateX(100%)',
+            opacity: '0'
+          },
+          '100%': { 
+            transform: 'translateX(0)',
+            opacity: '1'
+          },
+        },
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
@@ -88,6 +108,8 @@ module.exports = {
         'pulse-slow': 'pulse 2s ease-in-out infinite',
         'typewriter': 'typewriter 2s steps(40, end)',
         'blink': 'blink 0.75s step-end infinite',
+        'fadeSlideIn': 'fadeSlideIn 0.5s ease-out forwards',
+        'slideIn': 'slideIn 0.5s ease-out forwards',
       },
       transitionProperty: {
         'theme': 'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform',

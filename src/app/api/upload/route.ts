@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import OpenAI from 'openai';
+import path from 'path';
+import fs from 'fs';
+import { parse } from 'csv-parse/sync';
 
-interface AIClassification {
-  primaryCode: string;
-  primaryDescription: string;
-  confidence: number;
-  alternativeCodes?: Array<{
-    code: string;
-    description: string;
-    confidence: number;
-  }>;
+interface HTSRecord {
+  'HTS Number': string;
+  'Description': string;
+  'Unit of Quantity': string;
+  'General Rate of Duty': string;
+  'Special Rate of Duty': string;
+  'Indent': string;
 }
 
 const openai = new OpenAI({
@@ -29,21 +30,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Read HTS data
+    const csvPath = path.join(process.cwd(), 'htsdata.csv');
+    const csvContent = fs.readFileSync(csvPath, 'utf-8');
+    const records = parse(csvContent, {
+      columns: true,
+      skip_empty_lines: true
+    }) as HTSRecord[];
+
+    // Create a context string with relevant HS codes
+    const htsContext = records
+      .filter((record: HTSRecord) => record['HTS Number'] && record['Description'])
+      .map((record: HTSRecord) => `${record['HTS Number']}: ${record['Description']}`)
+      .join('\n')
+      .slice(0, 4000); // Limit context size
+
     // Convert the file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString('base64');
 
-    // Call GPT-4o
+    // Call GPT-4o with HTS data context
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
+        {
+          role: "system",
+          content: `You are a customs classification expert. Use the following HTS codes as reference:\n\n${htsContext}\n\n
+          When analyzing images, provide:
+          1. The exact HS code from the list
+          2. Full descriptions for each level (chapter, heading, subheading)
+          3. Be as specific and accurate as possible
+          
+          For example, for a laptop computer:
+          - Chapter 84: Nuclear reactors, boilers, machinery and mechanical appliances; parts thereof
+          - Heading 8471: Automatic data processing machines and units thereof
+          - Subheading 8471.30: Portable automatic data processing machines, weighing not more than 10 kg
+          
+          Return response as JSON.`
+        },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Analyze this image and provide a JSON response with this exact structure, no markdown. Use whole numbers for confidence (e.g., 95 instead of 0.95): { extractedText: 'detailed product description', classification: { primaryCode: 'code', primaryDescription: 'description', confidence: number, alternativeCodes: [{ code: 'code', description: 'description', confidence: number }] } }"
+              text: "Analyze this image and provide the most relevant HS code with full descriptions. Return the result as JSON with the following structure: { extractedText: string, classification: { code: string, description: string, chapterDescription: string, headingDescription: string, subheadingDescription: string } }"
             },
             {
               type: "image_url",
@@ -54,89 +85,36 @@ export async function POST(request: NextRequest) {
           ]
         }
       ],
-      max_tokens: 1000,
+      response_format: { type: "json_object" },
     });
 
-    // Parse the response
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from GPT-4o');
-    }
+    const cleanResponse = response.choices[0]?.message?.content?.trim() || '{}';
+    const aiSuggestions = JSON.parse(cleanResponse);
 
-    try {
-      // Clean up the response by removing markdown formatting
-      const cleanContent = content
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
+    // Get full HTS details for the suggested code
+    const htsDetails = records.find((record: HTSRecord) => {
+      const cleanRecordCode = record['HTS Number']?.toString().replace(/['"]/g, '');
+      const cleanSuggestionCode = aiSuggestions.classification?.code?.toString();
+      return cleanRecordCode === cleanSuggestionCode;
+    });
 
-      console.log('Cleaned content:', cleanContent);
-      
-      const parsedResponse = JSON.parse(cleanContent);
-      return NextResponse.json({
-        success: true,
-        extractedText: parsedResponse.extractedText,
-        classification: parsedResponse.classification,
-        results: [
-          {
-            code: parsedResponse.classification.primaryCode,
-            description: parsedResponse.classification.primaryDescription,
-          },
-          ...(parsedResponse.classification.alternativeCodes || []).map((alt: any) => ({
-            code: alt.code,
-            description: alt.description,
-          }))
-        ]
-      });
-    } catch (parseError) {
-      console.error('Error parsing GPT response:', parseError);
-      console.log('Raw content:', content);
-      
-      // More robust fallback parsing
-      try {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const jsonContent = jsonMatch[0];
-          const parsedResponse = JSON.parse(jsonContent);
-          return NextResponse.json({
-            success: true,
-            extractedText: parsedResponse.extractedText,
-            classification: parsedResponse.classification,
-            results: [
-              {
-                code: parsedResponse.classification.primaryCode,
-                description: parsedResponse.classification.primaryDescription,
-              }
-            ]
-          });
-        }
-      } catch (fallbackError) {
-        console.error('Fallback parsing failed:', fallbackError);
+    // Get chapter and heading descriptions from AI suggestions
+    return NextResponse.json({
+      success: true,
+      extractedText: aiSuggestions.extractedText,
+      classification: {
+        primaryCode: aiSuggestions.classification?.code || '',
+        primaryDescription: aiSuggestions.classification?.subheadingDescription || '',
+        chapterDescription: aiSuggestions.classification?.chapterDescription || '',
+        headingDescription: aiSuggestions.classification?.headingDescription || '',
+        subheadingDescription: aiSuggestions.classification?.subheadingDescription || '',
+        unitOfQuantity: htsDetails?.['Unit of Quantity'] ? 
+          JSON.parse(htsDetails['Unit of Quantity']) : [],
+        generalRate: htsDetails?.['General Rate of Duty'] || '',
+        specialRate: htsDetails?.['Special Rate of Duty'] || '',
+        confidence: 95
       }
-
-      // If all parsing fails, return a basic response with whole number confidence
-      const extractedText = content.match(/extractedText["\s:]+([^"}\n]+)/)?.[1] || '';
-      const primaryCode = content.match(/primaryCode["\s:]+([^"}\n]+)/)?.[1] || '';
-      const primaryDescription = content.match(/primaryDescription["\s:]+([^"}\n]+)/)?.[1] || '';
-      const confidence = parseInt(content.match(/confidence["\s:]+(\d+)/)?.[1] || '95'); // Default to 95
-
-      const classification: AIClassification = {
-        primaryCode,
-        primaryDescription,
-        confidence,
-        alternativeCodes: []
-      };
-
-      return NextResponse.json({
-        success: true,
-        extractedText,
-        classification,
-        results: [{
-          code: primaryCode,
-          description: primaryDescription,
-        }]
-      });
-    }
+    });
 
   } catch (error) {
     console.error('File upload error:', error);
