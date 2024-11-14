@@ -1,12 +1,26 @@
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs";
+'use client';
 
-export default async function HomePage() {
-  const { userId } = auth();
+import React from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { HSCodeLookup } from '../components/customs/HSCodeLookup';
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
+export default function HomePage() {
+  const router = useRouter();
 
-  redirect("/dashboard");
+  useEffect(() => {
+    router.push('/login');
+  }, [router]);
+
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">HS Code Lookup</h2>
+      <HSCodeLookup 
+        onHSCodeSelect={(code, description) => {
+          console.log('Selected HS Code:', code);
+          console.log('Selected Description:', description);
+        }}
+      />
+    </div>
+  );
 } 

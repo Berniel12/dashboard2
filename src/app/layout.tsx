@@ -18,9 +18,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <ThemeProvider>{children}</ThemeProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${inter.className} transition-theme duration-250 ease-theme`}>
+          <ThemeProvider>
+            <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-theme duration-250 ease-theme">
+              {children}
+            </div>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

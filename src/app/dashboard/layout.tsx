@@ -4,6 +4,7 @@ import { FileText, Home, Settings, Container, Users, Clock, Bell } from 'lucide-
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -46,7 +47,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
       {/* Sidebar */}
       <div className="w-64 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white flex flex-col">
         <div className="p-6 flex-1">
@@ -97,31 +98,34 @@ export default function DashboardLayout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation Bar */}
-        <div className="bg-white border-b h-16 flex items-center justify-between px-8">
-          <h1 className="text-xl font-semibold text-gray-800">
+        <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 h-16 flex items-center justify-between px-8">
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
             {navigationItems.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
           </h1>
           <div className="flex items-center space-x-4">
-            <button className="p-2 rounded-lg hover:bg-gray-100">
+            <ThemeToggle />
+            <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
               <div className="relative">
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
                   3
                 </span>
               </div>
             </button>
-            <div className="h-8 w-px bg-gray-200"></div>
-            <button className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                <span className="text-indigo-700 font-medium">JD</span>
+            <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+            <button className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                <span className="text-indigo-700 dark:text-indigo-300 font-medium">JD</span>
               </div>
             </button>
           </div>
         </div>
 
         {/* Page Content */}
-        <div className="flex-1 p-8 overflow-auto">
-          {children}
+        <div className="flex-1 p-8 overflow-auto bg-gray-100 dark:bg-gray-900">
+          <div className="dark:text-gray-100">
+            {children}
+          </div>
         </div>
       </div>
     </div>
