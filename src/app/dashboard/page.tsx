@@ -23,19 +23,12 @@ import {
   DollarSign,
   Package,
   Activity,
-  ZoomIn,
-  ZoomOut,
-  Move
+  Mail,
+  Star,
+  Circle,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { 
-  ComposableMap, 
-  Geographies, 
-  Geography, 
-  Marker,
-  ZoomableGroup 
-} from "react-simple-maps";
-import { line, curveBasis } from 'd3-geo';
+import MiniShipmentList from '@/components/dashboard/MiniShipmentList';
 
 const stats = [
   {
@@ -126,18 +119,72 @@ const recentDeclarations = [
 const activeShipments = [
   {
     id: "SHP-001",
-    reference: "SHIP-2024-001",
-    status: "In Transit",
-    vessel: "MSC Oscar",
-    eta: "2024-03-20"
+    origin: {
+      country: "China",
+      countryCode: "CN",
+    },
+    destination: {
+      country: "United States",
+      countryCode: "US",
+    },
+    details: {
+      vessel: "MSC Oscar",
+      status: "In Transit" as const,
+      progress: 65,
+      eta: "2024-03-20",
+    },
   },
   {
     id: "SHP-002",
-    reference: "SHIP-2024-002",
-    status: "At Port",
-    vessel: "Maersk Sealand",
-    eta: "2024-03-18"
-  }
+    origin: {
+      country: "Japan",
+      countryCode: "JP",
+    },
+    destination: {
+      country: "Canada",
+      countryCode: "CA",
+    },
+    details: {
+      vessel: "Maersk Sealand",
+      status: "At Port" as const,
+      progress: 85,
+      eta: "2024-03-18",
+    },
+  },
+  {
+    id: "SHP-003",
+    origin: {
+      country: "South Korea",
+      countryCode: "KR",
+    },
+    destination: {
+      country: "Germany",
+      countryCode: "DE",
+    },
+    details: {
+      vessel: "COSCO Shipping",
+      status: "In Transit" as const,
+      progress: 35,
+      eta: "2024-03-25",
+    },
+  },
+  {
+    id: "SHP-004",
+    origin: {
+      country: "Vietnam",
+      countryCode: "VN",
+    },
+    destination: {
+      country: "Netherlands",
+      countryCode: "NL",
+    },
+    details: {
+      vessel: "Ever Given",
+      status: "Customs Hold" as const,
+      progress: 92,
+      eta: "2024-03-17",
+    },
+  },
 ];
 
 const complianceAlerts = [
@@ -172,110 +219,36 @@ const upcomingTasks = [
   }
 ];
 
-// Sample data for charts
-const monthlyData = [
-  { name: 'Jan', declarations: 65 },
-  { name: 'Feb', declarations: 59 },
-  { name: 'Mar', declarations: 80 },
-  { name: 'Apr', declarations: 81 },
-  { name: 'May', declarations: 56 },
-  { name: 'Jun', declarations: 55 },
-];
-
-const pieData = [
-  { name: 'Import', value: 60 },
-  { name: 'Export', value: 40 },
-];
-
-const COLORS = ['#4F46E5', '#10B981'];
-
-const shipmentLocations = [
-  { 
-    id: 'SHIP-001',
-    vesselName: 'MSC Oscar',
-    status: 'In Transit',
-    position: [-175.0000, 35.0000], // Middle of Pacific Ocean
+// New messages data
+const recentMessages = [
+  {
+    id: "MSG-001",
+    sender: "Customs Authority",
+    subject: "Declaration CD-2024-1234 Status Update",
+    preview: "Your declaration has been selected for document review...",
+    status: "unread",
+    priority: "high",
+    timestamp: "2 hours ago"
   },
-  { 
-    id: 'SHIP-002',
-    vesselName: 'Maersk Sealand',
-    status: 'At Port',
-    position: [3.7492, 51.2217], // Port of Rotterdam
+  {
+    id: "MSG-002",
+    sender: "Port Authority",
+    subject: "Vessel Schedule Change Notice",
+    preview: "Please be advised of the following changes to vessel arrival...",
+    status: "read",
+    priority: "medium",
+    timestamp: "5 hours ago"
   },
-  { 
-    id: 'SHIP-003',
-    vesselName: 'CMA CGM Marco Polo',
-    status: 'In Transit',
-    position: [60.8198, 15.3521], // Arabian Sea
-  },
-  { 
-    id: 'SHIP-004',
-    vesselName: 'COSCO Pacific',
-    status: 'At Port',
-    position: [121.4737, 31.2304], // Port of Shanghai
-  },
-  { 
-    id: 'SHIP-005',
-    vesselName: 'Evergreen Ever Given',
-    status: 'In Transit',
-    position: [40.0000, 12.0000], // Indian Ocean
-  },
-  { 
-    id: 'SHIP-006',
-    vesselName: 'ONE Commitment',
-    status: 'At Port',
-    position: [-118.2437, 33.7271], // Port of Los Angeles
+  {
+    id: "MSG-003",
+    sender: "System Notification",
+    subject: "New HS Code Updates Available",
+    preview: "The latest HS code database updates are now available...",
+    status: "unread",
+    priority: "low",
+    timestamp: "1 day ago"
   }
 ];
-
-const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
-
-const calculateIntermediatePoint = (start: [number, number], end: [number, number], progress: number) => {
-  const midX = (start[0] + end[0]) / 2;
-  const midY = (start[1] + end[1]) / 2;
-  const curveDirection = start[1] > 0 ? -1 : 1;
-  const distance = Math.sqrt(
-    Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2)
-  );
-  const curveHeight = distance * 0.15 * curveDirection;
-  const controlX = midX;
-  const controlY = midY + curveHeight;
-
-  // Quadratic Bézier curve formula
-  const t = progress;
-  const x = Math.pow(1 - t, 2) * start[0] + 
-           2 * (1 - t) * t * controlX + 
-           Math.pow(t, 2) * end[0];
-  const y = Math.pow(1 - t, 2) * start[1] + 
-           2 * (1 - t) * t * controlY + 
-           Math.pow(t, 2) * end[1];
-
-  return [x, y] as [number, number];
-};
-
-const generateCurvedPath = (start: [number, number], end: [number, number]) => {
-  // Calculate the midpoint
-  const midX = (start[0] + end[0]) / 2;
-  const midY = (start[1] + end[1]) / 2;
-  
-  // Calculate the distance between points
-  const dx = end[0] - start[0];
-  const dy = end[1] - start[1];
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  
-  // Calculate curve direction based on hemisphere
-  const curveDirection = start[1] > 0 ? -1 : 1;
-  
-  // Calculate the curve height based on distance and latitude
-  const curveHeight = distance * 0.15 * curveDirection;
-  
-  // Calculate the control point (perpendicular to the midpoint)
-  const controlX = midX;
-  const controlY = midY + curveHeight; // Curve follows ocean routes
-  
-  // Create an SVG path with a quadratic Bézier curve
-  return `M ${start[0]} ${start[1]} Q ${controlX} ${controlY} ${end[0]} ${end[1]}`;
-};
 
 export default function DashboardPage() {
   const getStatusColor = (status: string) => {
@@ -394,199 +367,135 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Charts Section */}
+      {/* Charts Section - Updated */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Monthly Declarations Trend - 4 columns */}
+        {/* Message Inbox - Replacing Monthly Declarations */}
         <div className="lg:col-span-4 bg-white p-4 rounded-lg shadow-sm">
-          <h3 className="text-sm font-semibold mb-3">Monthly Declarations</h3>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="declarations" 
-                  stroke="#4F46E5" 
-                  strokeWidth={2}
-                  dot={{ fill: '#4F46E5' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Declaration Types - 3 columns */}
-        <div className="lg:col-span-3 bg-white p-4 rounded-lg shadow-sm">
-          <h3 className="text-sm font-semibold mb-3">Declaration Types</h3>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={75}
-                  fill="#8884d8"
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex justify-center space-x-6">
-              {pieData.map((entry, index) => (
-                <div key={entry.name} className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: COLORS[index] }}
-                  />
-                  <span className="text-xs text-gray-600">{entry.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* World Map with Shipments - 5 columns */}
-        <div className="lg:col-span-5 bg-white p-4 rounded-lg shadow-sm">
           <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-semibold">Message Inbox</h3>
+            <Link href="/dashboard/messages" className="text-xs text-blue-600 hover:text-blue-800">
+              View All
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {recentMessages.map((message) => (
+              <div 
+                key={message.id} 
+                className={`p-3 rounded-lg border ${
+                  message.status === 'unread' ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-100'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-0.5 ${
+                    message.priority === 'high' ? 'text-red-500' :
+                    message.priority === 'medium' ? 'text-yellow-500' :
+                    'text-green-500'
+                  }`}>
+                    <Circle className="w-2 h-2 fill-current" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{message.subject}</p>
+                    <p className="text-xs text-gray-500 truncate">{message.sender}</p>
+                    <p className="text-xs text-gray-400 mt-1">{message.timestamp}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Compliance Overview - With added matrices */}
+        <div className="lg:col-span-3 bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="text-sm font-semibold mb-3">Compliance Overview</h3>
+          <div className="space-y-4">
+            {/* Progress Bars */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Document Compliance</span>
+                <span className="font-medium">98%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full bg-green-500 rounded-full" style={{ width: '98%' }} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Declaration Accuracy</span>
+                <span className="font-medium">95%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: '95%' }} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Customs Response</span>
+                <span className="font-medium">92%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full">
+                <div className="h-full bg-purple-500 rounded-full" style={{ width: '92%' }} />
+              </div>
+            </div>
+
+            {/* Risk Assessment Matrix */}
+            <div className="pt-2">
+              <h4 className="text-xs font-medium text-gray-600 mb-2">Risk Assessment</h4>
+              <div className="grid grid-cols-3 gap-1">
+                <div className="bg-red-100 text-red-800 text-xs font-medium p-2 rounded text-center">
+                  High Risk
+                  <div className="text-lg font-bold">3</div>
+                </div>
+                <div className="bg-yellow-100 text-yellow-800 text-xs font-medium p-2 rounded text-center">
+                  Medium Risk
+                  <div className="text-lg font-bold">8</div>
+                </div>
+                <div className="bg-green-100 text-green-800 text-xs font-medium p-2 rounded text-center">
+                  Low Risk
+                  <div className="text-lg font-bold">24</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Document Status Matrix */}
+            <div className="pt-2">
+              <h4 className="text-xs font-medium text-gray-600 mb-2">Document Status</h4>
+              <div className="grid grid-cols-2 gap-1">
+                <div className="flex items-center justify-between bg-blue-50 p-2 rounded">
+                  <span className="text-xs text-blue-700">Pending Review</span>
+                  <span className="text-sm font-bold text-blue-700">12</span>
+                </div>
+                <div className="flex items-center justify-between bg-purple-50 p-2 rounded">
+                  <span className="text-xs text-purple-700">In Process</span>
+                  <span className="text-sm font-bold text-purple-700">8</span>
+                </div>
+                <div className="flex items-center justify-between bg-yellow-50 p-2 rounded">
+                  <span className="text-xs text-yellow-700">Requires Action</span>
+                  <span className="text-sm font-bold text-yellow-700">5</span>
+                </div>
+                <div className="flex items-center justify-between bg-green-50 p-2 rounded">
+                  <span className="text-xs text-green-700">Completed</span>
+                  <span className="text-sm font-bold text-green-700">35</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Keep Active Shipments section */}
+        <div className="lg:col-span-5 bg-white p-4 rounded-lg shadow-sm">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">Active Shipments</h3>
-            <div className="flex space-x-2">
-              <button 
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
-                onClick={() => {
-                  // Add zoom in functionality
-                }}
-              >
-                <ZoomIn className="w-4 h-4" />
-              </button>
-              <button 
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
-                onClick={() => {
-                  // Add zoom out functionality
-                }}
-              >
-                <ZoomOut className="w-4 h-4" />
-              </button>
-              <button 
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
-                onClick={() => {
-                  // Add reset position functionality
-                }}
-              >
-                <Move className="w-4 h-4" />
-              </button>
-            </div>
+            <Link href="/dashboard/shipments" className="text-xs text-blue-600 hover:text-blue-800">
+              View All
+            </Link>
           </div>
-          <div className="h-[200px] relative">
-            <ComposableMap
-              projection="geoMercator"
-              projectionConfig={{
-                scale: 100,
-              }}
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              <ZoomableGroup center={[0, 30]} zoom={1}>
-                <Geographies geography={geoUrl}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        fill="#E5E7EB"
-                        stroke="#D1D5DB"
-                        strokeWidth={0.5}
-                        style={{
-                          default: {
-                            fill: "#E5E7EB",
-                            stroke: "#D1D5DB",
-                            strokeWidth: 0.5,
-                            outline: "none"
-                          },
-                          hover: {
-                            fill: "#F3F4F6",
-                            stroke: "#D1D5DB",
-                            strokeWidth: 0.5,
-                            outline: "none"
-                          },
-                          pressed: {
-                            fill: "#E5E7EB",
-                            stroke: "#D1D5DB",
-                            strokeWidth: 0.5,
-                            outline: "none"
-                          }
-                        }}
-                      />
-                    ))
-                  }
-                </Geographies>
-                
-                {/* Ship Markers */}
-                {shipmentLocations.map((shipment) => (
-                  <Marker 
-                    key={shipment.id} 
-                    coordinates={shipment.position as [number, number]}
-                  >
-                    <g transform="translate(-12, -24)">
-                      {shipment.status === 'At Port' ? (
-                        // Port icon (anchor)
-                        <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"
-                          fill="#10B981"
-                          stroke="#fff"
-                          strokeWidth="1"
-                        />
-                      ) : (
-                        // Ship icon (vessel)
-                        <path
-                          d="M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0 1.26.65 2.62.99 4 .99h2v-2h-2zM3.95 19H4c1.6 0 3.02-.88 4-2 .98 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08-.26.06-.54-.06-.78s-.34-.42-.6-.5L20 10.62V6c0-1.1-.9-2-2-2h-3V1H9v3H6c-1.1 0-2 .9-2 2v4.62l-1.29.42c-.26.08-.48.26-.6.5s-.15.52-.06.78L3.95 19zM6 6h12v3.97L12 8 6 9.97V6z"
-                          fill="#4F46E5"
-                          stroke="#fff"
-                          strokeWidth="1"
-                        />
-                      )}
-                      <text
-                        textAnchor="middle"
-                        y={-8}
-                        style={{
-                          fontFamily: "system-ui",
-                          fontSize: "10px",
-                          fill: "#4B5563",
-                          fontWeight: "500",
-                          pointerEvents: "none"
-                        }}
-                      >
-                        {shipment.vesselName}
-                      </text>
-                    </g>
-                  </Marker>
-                ))}
-              </ZoomableGroup>
-            </ComposableMap>
-          </div>
-          <div className="flex justify-center space-x-6 mt-3">
-            <div className="flex items-center">
-              <div className="w-3 h-3 rounded-full bg-indigo-600 mr-2" />
-              <span className="text-xs text-gray-600">Active Vessels</span>
-            </div>
-          </div>
+          <MiniShipmentList shipments={activeShipments} />
         </div>
       </div>
 
       {/* Quick Actions and Recent Activity Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Quick Actions */}
+        {/* Keep Quick Actions section */}
         <div className="bg-white rounded-lg shadow-sm p-4">
           <h3 className="text-sm font-semibold mb-3">Quick Actions</h3>
           <div className="space-y-2">
@@ -603,7 +512,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Declarations */}
+        {/* Keep Recent Declarations section */}
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold">Recent Declarations</h3>
@@ -633,43 +542,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Active Shipments */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-semibold">Active Shipments</h3>
-            <Link href="/dashboard/shipments" className="text-xs text-blue-600 hover:text-blue-800">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {activeShipments.map((shipment) => {
-              const StatusIcon = getStatusIcon(shipment.status);
-              return (
-                <div key={shipment.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Ship className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="font-medium">{shipment.reference}</p>
-                      <p className="text-sm text-gray-500">{shipment.vessel}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(shipment.status)}`}>
-                      <StatusIcon className="w-4 h-4 mr-1" />
-                      {shipment.status}
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">ETA: {shipment.eta}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Compliance and Tasks Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Compliance Alerts */}
+        {/* Keep Compliance Alerts section */}
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold">Compliance Alerts</h3>
@@ -693,7 +566,10 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
 
+      {/* Compliance and Tasks Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Upcoming Tasks */}
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex justify-between items-center mb-3">
