@@ -9,7 +9,8 @@ import {
   Users,
   Settings,
   Box,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 
 const navigation = [
@@ -17,7 +18,7 @@ const navigation = [
   { name: 'Declarations', href: '/declarations', icon: FileText },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Inventory', href: '/inventory', icon: Box },
-  { name: 'Compliance', href: '/compliance', icon: AlertCircle },
+  { name: 'Compliance', href: '/dashboard/compliance', icon: ShieldCheck },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

@@ -1,5 +1,7 @@
 import React from 'react';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
+import IntegrationStatus from '@/components/compliance/IntegrationStatus';
+import OpenCases from '@/components/compliance/OpenCases';
 
 export default function CompliancePage() {
   return (
@@ -12,9 +14,21 @@ export default function CompliancePage() {
           </button>
         </div>
         
-        {/* Content will go here */}
-        <div className="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl p-6">
-          <p className="text-gray-500">Compliance page content coming soon...</p>
+        {/* Integration Status */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium text-gray-900">Integration Status</h2>
+          <IntegrationStatus />
+        </div>
+
+        {/* Open Cases */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium text-gray-900">Open Cases</h2>
+            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All Cases
+            </button>
+          </div>
+          <OpenCases />
         </div>
       </div>
     </DashboardLayout>

@@ -26,9 +26,11 @@ import {
   Mail,
   Star,
   Circle,
+  Settings,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import MiniShipmentList from '@/components/dashboard/MiniShipmentList';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 const stats = [
   {
@@ -251,6 +253,8 @@ const recentMessages = [
 ];
 
 export default function DashboardPage() {
+  const { widgets } = useDashboard();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'In Progress':
@@ -285,9 +289,74 @@ export default function DashboardPage() {
     }
   };
 
+  // Helper function to render widget content
+  const renderWidget = (widgetId: string) => {
+    switch (widgetId) {
+      case 'revenue':
+        return (
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg shadow-sm text-white h-full">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-blue-100">Monthly Revenue</p>
+                <h3 className="text-2xl font-bold mt-0.5">$45,231</h3>
+                <p className="text-xs text-blue-100 mt-0.5">+12.5% from last month</p>
+              </div>
+              <DollarSign className="w-6 h-6 text-blue-100" />
+            </div>
+          </div>
+        );
+      case 'declarations':
+        return (
+          <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-lg shadow-sm text-white h-full">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-green-100">Active Declarations</p>
+                <h3 className="text-2xl font-bold mt-0.5">24</h3>
+                <p className="text-xs text-green-100 mt-0.5">18 pending review</p>
+              </div>
+              <FileText className="w-6 h-6 text-green-100" />
+            </div>
+          </div>
+        );
+      case 'shipments':
+        return (
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-lg shadow-sm text-white h-full">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-purple-100">Active Shipments</p>
+                <h3 className="text-2xl font-bold mt-0.5">18</h3>
+                <p className="text-xs text-purple-100 mt-0.5">+8% from last month</p>
+              </div>
+              <Ship className="w-6 h-6 text-purple-100" />
+            </div>
+          </div>
+        );
+      case 'compliance':
+        return (
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-lg shadow-sm text-white h-full">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-emerald-100">Compliance Rate</p>
+                <h3 className="text-2xl font-bold mt-0.5">98.5%</h3>
+                <p className="text-xs text-emerald-100 mt-0.5">+0.5% this week</p>
+              </div>
+              <CheckCircle className="w-6 h-6 text-emerald-100" />
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Sort widgets by order and filter enabled ones
+  const activeWidgets = widgets
+    .filter(widget => widget.enabled)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <div className="space-y-4">
-      {/* Header with Welcome Message */}
+      {/* Updated Header with Welcome Message and Customize Button */}
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="flex justify-between items-center">
           <div>
@@ -312,59 +381,28 @@ export default function DashboardPage() {
             <button className="p-1.5 rounded-lg hover:bg-gray-100">
               <Calendar className="w-4 h-4 text-gray-500" />
             </button>
+            {/* Customize Dashboard Button */}
+            <Link
+              href="/dashboard/customize"
+              className="flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <Settings className="w-4 h-4 mr-1.5" />
+              Customize Dashboard
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Revenue Card */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg shadow-sm text-white">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-blue-100">Monthly Revenue</p>
-              <h3 className="text-2xl font-bold mt-0.5">$45,231</h3>
-              <p className="text-xs text-blue-100 mt-0.5">+12.5% from last month</p>
+      {/* Dynamic widget rendering */}
+      <div className="grid grid-cols-4 gap-4">
+        {activeWidgets
+          .filter(widget => ['revenue', 'declarations', 'shipments', 'compliance'].includes(widget.id))
+          .sort((a, b) => a.order - b.order)
+          .map(widget => (
+            <div key={widget.id} className="w-full">
+              {renderWidget(widget.id)}
             </div>
-            <DollarSign className="w-6 h-6 text-blue-100" />
-          </div>
-        </div>
-
-        {/* Declarations Card */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-lg shadow-sm text-white">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-green-100">Active Declarations</p>
-              <h3 className="text-2xl font-bold mt-0.5">24</h3>
-              <p className="text-xs text-green-100 mt-0.5">18 pending review</p>
-            </div>
-            <FileText className="w-6 h-6 text-green-100" />
-          </div>
-        </div>
-
-        {/* Shipments Card */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-lg shadow-sm text-white">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-purple-100">Active Shipments</p>
-              <h3 className="text-2xl font-bold mt-0.5">18</h3>
-              <p className="text-xs text-purple-100 mt-0.5">12 in transit</p>
-            </div>
-            <Ship className="w-6 h-6 text-purple-100" />
-          </div>
-        </div>
-
-        {/* Compliance Card */}
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-lg shadow-sm text-white">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-orange-100">Compliance Rate</p>
-              <h3 className="text-2xl font-bold mt-0.5">98.5%</h3>
-              <p className="text-xs text-orange-100 mt-0.5">+0.5% this week</p>
-            </div>
-            <Activity className="w-6 h-6 text-orange-100" />
-          </div>
-        </div>
+          ))}
       </div>
 
       {/* Charts Section - Updated */}
