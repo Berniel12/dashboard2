@@ -9,10 +9,21 @@ interface PartyInfo {
   domain?: string;
 }
 
-interface CustomsDocument {
-  name: string;
-  status: 'completed' | 'pending' | 'not-started';
-  date?: string;
+interface CustomsDetails {
+  declarationType: string;
+  status: string;
+  clearanceDate?: string;
+  customsOffice: string;
+  declarationNumber?: string;
+  entryNumber: string;
+  declarationDate: string;
+  duties: string;
+  taxes: string;
+  documents?: Array<{
+    name: string;
+    status: "completed" | "pending" | "not-started" | "verified" | "missing";
+    date?: string;
+  }>;
 }
 
 export interface CargoClassification {
@@ -38,19 +49,15 @@ export interface ShipmentDetailsCardProps {
     volume: string;
     classifications: CargoClassification[];
   };
-  customsDetails: {
-    declarationType: string;
-    status: string;
-    clearanceDate?: string;
-    customsOffice: string;
-    declarationNumber?: string;
-  };
+  customsDetails: CustomsDetails;
   parties: {
     shipper: string;
     consignee: string;
     notifyParty?: string;
   };
 }
+
+type DocumentStatusType = "completed" | "pending" | "not-started" | "verified" | "missing";
 
 export const ShipmentDetailsCard: React.FC<ShipmentDetailsCardProps> = ({
   transportDetails,
@@ -122,14 +129,18 @@ export const ShipmentDetailsCard: React.FC<ShipmentDetailsCardProps> = ({
     );
   };
 
-  const DocumentStatus = ({ status }: { status: CustomsDocument['status'] }) => {
+  const DocumentStatus = ({ status }: { status: DocumentStatusType }) => {
     const getStatusColor = () => {
       switch (status) {
         case 'completed':
+        case 'verified':
           return 'bg-green-500';
         case 'pending':
           return 'bg-yellow-500';
+        case 'missing':
+          return 'bg-red-500';
         case 'not-started':
+        default:
           return 'bg-gray-300';
       }
     };
@@ -215,7 +226,7 @@ export const ShipmentDetailsCard: React.FC<ShipmentDetailsCardProps> = ({
           <div className="mt-3 pt-2 border-t border-gray-100">
             <div className="text-xs font-medium text-gray-600 mb-1.5">Required Documents</div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-              {customsDetails.documents.map((doc, index) => (
+              {customsDetails.documents?.map((doc, index) => (
                 <div key={index} className="flex items-center gap-1.5 text-[10px]">
                   <DocumentStatus status={doc.status} />
                   <span className="text-gray-700 truncate">{doc.name}</span>
@@ -258,23 +269,25 @@ export const ShipmentDetailsCard: React.FC<ShipmentDetailsCardProps> = ({
         <div className="flex flex-col h-full">
           <div className="grid grid-cols-2 gap-2">
             <PartyCard 
-              title="Exporter"
-              name={parties.exporter.name}
-              address={parties.exporter.address}
-              domain={parties.exporter.domain}
-            />
-            <PartyCard 
-              title="Importer"
-              name={parties.importer.name}
-              address={parties.importer.address}
-              domain={parties.importer.domain}
+              title="Shipper"
+              name={parties.shipper}
+              address="Address not available"
+              domain=""
             />
             <PartyCard 
               title="Consignee"
-              name={parties.consignee.name}
-              address={parties.consignee.address}
-              domain={parties.consignee.domain}
+              name={parties.consignee}
+              address="Address not available"
+              domain=""
             />
+            {parties.notifyParty && (
+              <PartyCard 
+                title="Notify Party"
+                name={parties.notifyParty}
+                address="Address not available"
+                domain=""
+              />
+            )}
             <PartyCard 
               title="Customs Broker"
               name="ABC Customs Brokers"

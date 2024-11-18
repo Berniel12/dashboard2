@@ -21,6 +21,11 @@ interface NewDeclarationFormProps {
   onCancel: () => void;
 }
 
+interface HSCode {
+  code: string;
+  description: string;
+}
+
 export default function NewDeclarationForm({ onSubmit, onCancel }: NewDeclarationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     client: '',
@@ -35,73 +40,87 @@ export default function NewDeclarationForm({ onSubmit, onCancel }: NewDeclaratio
   });
 
   const [hsSearchTerm, setHsSearchTerm] = useState('');
-  const filteredHSCodes = searchCodes(hsSearchTerm);
+  const filteredHSCodes: HSCode[] = searchCodes(hsSearchTerm);
 
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    if (file) {
-      try {
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const base64File = reader.result?.toString().split(',')[1];
-            const response = await fetch('/api/parse-pdf', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ file: base64File }),
-            });
+    if (!file) return;
 
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || 'Failed to parse PDF');
-            }
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64File = reader.result?.toString().split(',')[1];
+          const response = await fetch('/api/parse-pdf', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ file: base64File }),
+          });
 
-            const { data } = await response.json();
-            
-            // Parse the extracted data
-            let parsedData;
-            try {
-              parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-            } catch (e) {
-              console.error('Error parsing JSON:', e);
-              throw new Error('Invalid data format received');
-            }
-
-            setFormData((prev) => ({
-              ...prev,
-              client: parsedData.client || prev.client,
-              declarationType: parsedData.declarationType || prev.declarationType,
-              portOfEntry: parsedData.portOfEntry || prev.portOfEntry,
-              shipmentValue: parsedData.shipmentValue || prev.shipmentValue,
-              description: parsedData.description || prev.description,
-              hsCode: parsedData.hsCode || prev.hsCode,
-              countryOfOrigin: parsedData.countryOfOrigin || prev.countryOfOrigin,
-              weight: parsedData.weight || prev.weight,
-              quantity: parsedData.quantity || prev.quantity,
-            }));
-          } catch (error) {
-            console.error('Error processing file:', error);
-            // Here you might want to show an error message to the user
-            alert(error.message || 'Failed to process the PDF file');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to parse PDF');
           }
-        };
 
-        reader.onerror = () => {
-          console.error('Error reading file:', reader.error);
-          alert('Error reading the file');
-        };
+          const { data } = await response.json();
+          
+          // Parse the extracted data
+          let parsedData;
+          try {
+            parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+          } catch (e) {
+            console.error('Error parsing JSON:', e);
+            throw new Error('Invalid data format received');
+          }
 
-        reader.readAsDataURL(file);
-      } catch (error) {
-        console.error('Error processing PDF:', error);
+          setFormData((prev) => ({
+            ...prev,
+            client: parsedData.client || prev.client,
+            declarationType: parsedData.declarationType || prev.declarationType,
+            portOfEntry: parsedData.portOfEntry || prev.portOfEntry,
+            shipmentValue: parsedData.shipmentValue || prev.shipmentValue,
+            description: parsedData.description || prev.description,
+            hsCode: parsedData.hsCode || prev.hsCode,
+            countryOfOrigin: parsedData.countryOfOrigin || prev.countryOfOrigin,
+            weight: parsedData.weight || prev.weight,
+            quantity: parsedData.quantity || prev.quantity,
+          }));
+        } catch (error) {
+          console.error('Error processing file:', error);
+          // Type guard to check if error is an Error object
+          if (error instanceof Error) {
+            alert(error.message);
+          } else {
+            alert('Failed to process the PDF file');
+          }
+        }
+      };
+
+      reader.onerror = () => {
+        console.error('Error reading file:', reader.error);
+        alert('Error reading the file');
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing PDF:', error);
+      // Type guard for outer try-catch block
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
         alert('Error processing the PDF file');
       }
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'application/pdf' });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop, 
+    accept: {
+      'application/pdf': ['.pdf']
+    }
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -212,7 +231,7 @@ export default function NewDeclarationForm({ onSubmit, onCancel }: NewDeclaratio
           />
           {hsSearchTerm && (
             <div className="mt-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
-              {filteredHSCodes.map((code) => (
+              {filteredHSCodes.map((code: HSCode) => (
                 <button
                   key={code.code}
                   type="button"

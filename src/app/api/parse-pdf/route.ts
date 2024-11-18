@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
-import * as pdfjs from 'pdfjs-dist';
-import { getDocument } from 'pdfjs-dist';
+import * as pdfjs from 'pdfjs-dist/build/pdf';
 
 // Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize PDF.js worker and configure standard fonts
-const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+// Initialize PDF.js worker and configure
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 // Configure PDF.js
 const pdfjsConfig = {
@@ -38,8 +36,8 @@ export async function POST(request: NextRequest) {
       bytes[i] = binaryString.charCodeAt(i);
     }
 
-    // Load PDF document
-    const loadingTask = getDocument({ data: bytes, ...pdfjsConfig });
+    // Load PDF document using pdfjs.getDocument
+    const loadingTask = pdfjs.getDocument({ data: bytes, ...pdfjsConfig });
     const pdf = await loadingTask.promise;
 
     // Extract text from all pages

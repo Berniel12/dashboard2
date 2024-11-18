@@ -1,14 +1,25 @@
 import { WCODeclaration } from '@/types/customs';
 import { WCO_REFERENCES } from '@/utils/wcoReferences';
 
+// Define the valid transport mode codes
+type TransportModeCode = keyof typeof WCO_REFERENCES.transportModes;
+
+function calculateWCOValue(declaration: any): number {
+  const baseValue = declaration.value || 0;
+  const freight = declaration.freightCost || 0;
+  const insurance = declaration.insuranceCost || 0;
+  
+  return baseValue + freight + insurance;
+}
+
 export function WCOAnalytics({ declarations }: { declarations: WCODeclaration[] }) {
   // Calculate metrics based on WCO standards
   const metrics = {
     byTransportMode: declarations.reduce((acc, dec) => {
-      const modeCode = dec.goodsShipment.consignment.arrivalTransportMeans.modeCode;
+      const modeCode = dec.goodsShipment.consignment.arrivalTransportMeans.modeCode as TransportModeCode;
       acc[modeCode] = (acc[modeCode] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>),
+    }, {} as Record<TransportModeCode, number>),
     
     byDeclarationType: declarations.reduce((acc, dec) => {
       acc[dec.declarationType] = (acc[dec.declarationType] || 0) + 1;
@@ -16,7 +27,6 @@ export function WCOAnalytics({ declarations }: { declarations: WCODeclaration[] 
     }, {} as Record<string, number>),
     
     totalValue: declarations.reduce((acc, dec) => {
-      // Sum up values in a standardized way
       return acc + calculateWCOValue(dec);
     }, 0),
   };
@@ -28,7 +38,7 @@ export function WCOAnalytics({ declarations }: { declarations: WCODeclaration[] 
         <h3 className="text-lg font-semibold mb-4">Transport Modes</h3>
         {Object.entries(metrics.byTransportMode).map(([code, count]) => (
           <div key={code} className="flex justify-between items-center mb-2">
-            <span>{WCO_REFERENCES.transportModes[code]}</span>
+            <span>{WCO_REFERENCES.transportModes[code as TransportModeCode]}</span>
             <span className="font-semibold">{count}</span>
           </div>
         ))}

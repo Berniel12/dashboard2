@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>('');
   const router = useRouter();
   const { signIn, isLoaded: clerkLoaded } = useSignIn();
 
@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       if (!clerkLoaded) return;
       setIsLoading(true);
-      setError(null);
+      setError('');
       
       await signIn.authenticateWithRedirect({
         strategy,

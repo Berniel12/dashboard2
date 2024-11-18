@@ -1,9 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ShipmentProgress } from '@/components/shipments/ShipmentProgress';
 import { ShipmentTimeline } from '@/components/shipments/ShipmentTimeline';
 import { ShipmentDetailsCard } from '@/components/shipments/ShipmentDetailsCard';
+import { ShipmentAnalysis } from '@/components/shipments/ShipmentAnalysis';
+import { LineChart } from 'lucide-react';
+
+interface CargoClassification {
+  type: string;
+  label: string;
+}
+
+interface CargoDetails {
+  description: string;
+  hsCode: string;
+  packages: number;
+  grossWeight: string;
+  volume: string;
+  classifications: CargoClassification[];
+}
+
+interface CustomsDetails {
+  declarationType: string;
+  status: string;
+  clearanceDate?: string;
+  customsOffice: string;
+  declarationNumber: string;
+  entryNumber: string;
+  declarationDate: string;
+  duties: string;
+  taxes: string;
+  documents: Array<{
+    name: string;
+    status: "completed" | "pending" | "not-started" | "verified" | "missing";
+    date?: string;
+  }>;
+}
 
 const shipmentDatabase = {
   'SHP001': {
@@ -46,6 +79,10 @@ const shipmentDatabase = {
         ] as const,
       },
       customsDetails: {
+        declarationType: "Import",
+        status: "In Progress",
+        customsOffice: "Los Angeles Customs",
+        declarationNumber: "DEC123456",
         entryNumber: "ENTRY123456",
         declarationDate: "2024-03-15",
         duties: "$12,500",
@@ -53,31 +90,31 @@ const shipmentDatabase = {
         documents: [
           {
             name: "Commercial Invoice",
-            status: "completed" as const,
+            status: "completed",
             date: "2024-03-10",
           },
           {
             name: "Packing List",
-            status: "completed" as const,
+            status: "completed",
             date: "2024-03-10",
           },
           {
             name: "Bill of Lading",
-            status: "completed" as const,
+            status: "completed",
             date: "2024-03-12",
           },
           {
             name: "Import License",
-            status: "pending" as const,
+            status: "pending",
             date: "2024-03-15",
           },
           {
             name: "Certificate of Origin",
-            status: "pending" as const,
+            status: "pending",
           },
           {
             name: "Insurance Certificate",
-            status: "not-started" as const,
+            status: "not-started",
           },
         ],
       },
@@ -207,6 +244,10 @@ const shipmentDatabase = {
         ] as const,
       },
       customsDetails: {
+        declarationType: "Import",
+        status: "Pending",
+        customsOffice: "Rotterdam Customs",
+        declarationNumber: "DEC789012",
         entryNumber: "ENTRY789012",
         declarationDate: "2024-03-22",
         duties: "$8,750",
@@ -214,17 +255,17 @@ const shipmentDatabase = {
         documents: [
           {
             name: "Commercial Invoice",
-            status: "completed" as const,
+            status: "completed",
             date: "2024-03-15",
           },
           {
             name: "Packing List",
-            status: "completed" as const,
+            status: "completed",
             date: "2024-03-15",
           },
           {
             name: "Bill of Lading",
-            status: "pending" as const,
+            status: "pending",
           },
         ],
       },
@@ -657,6 +698,7 @@ const getShipmentData = (id: string) => {
 
 export default function ShipmentPage({ params }: { params: { id: string } }) {
   const shipmentData = getShipmentData(params.id);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
 
   React.useEffect(() => {
     // Preload images
@@ -671,8 +713,41 @@ export default function ShipmentPage({ params }: { params: { id: string } }) {
     });
   }, []);
 
+  // Create customsDetails with proper typing
+  const defaultCustomsDetails: Omit<CustomsDetails, 'documents'> = {
+    declarationType: "Import",
+    status: "Pending",
+    customsOffice: "N/A",
+    declarationNumber: "",
+    entryNumber: "",
+    declarationDate: "",
+    duties: "",
+    taxes: ""
+  };
+
+  const customsDetails: CustomsDetails = {
+    ...defaultCustomsDetails,
+    ...shipmentData.details.customsDetails,
+    documents: shipmentData.details.customsDetails.documents.map(doc => ({
+      ...doc,
+      status: doc.status as "completed" | "pending" | "not-started" | "verified" | "missing"
+    }))
+  };
+
   return (
     <div className="h-[calc(100vh-4rem)] p-6 bg-gray-50">
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Shipment Details</h1>
+        <button
+          onClick={() => setIsAnalysisOpen(true)}
+          className="px-4 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                     flex items-center space-x-2 transition-colors text-sm"
+        >
+          <LineChart className="w-4 h-4" />
+          <span>Optimize Costs</span>
+        </button>
+      </div>
+
       <div className="h-full grid grid-cols-12 gap-5">
         {/* Left section - Progress bar with country cards */}
         <div className="col-span-2 flex flex-col">
@@ -704,10 +779,38 @@ export default function ShipmentPage({ params }: { params: { id: string } }) {
               <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
               <h2 className="text-base font-semibold text-gray-900">Shipment Details</h2>
             </div>
-            <ShipmentDetailsCard {...shipmentData.details} />
+            <ShipmentDetailsCard 
+              {...{
+                ...shipmentData.details,
+                cargoDetails: {
+                  ...shipmentData.details.cargoDetails,
+                  classifications: [...shipmentData.details.cargoDetails.classifications]
+                },
+                customsDetails,
+                parties: {
+                  shipper: shipmentData.details.parties.exporter.name,
+                  consignee: shipmentData.details.parties.consignee.name,
+                  notifyParty: shipmentData.details.parties.importer.name
+                }
+              }} 
+            />
           </div>
         </div>
       </div>
+
+      <ShipmentAnalysis
+        shipmentId={params.id}
+        isOpen={isAnalysisOpen}
+        onClose={() => setIsAnalysisOpen(false)}
+        autoStart={true}
+        shipmentSummary={{
+          origin: shipmentData.progress.origin,
+          destination: shipmentData.progress.destination,
+          containerCount: shipmentData.details.transportDetails.containerCount,
+          containerType: shipmentData.details.transportDetails.containerType,
+          bookingRef: shipmentData.details.transportDetails.bookingRef,
+        }}
+      />
     </div>
   );
 } 

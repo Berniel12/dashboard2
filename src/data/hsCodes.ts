@@ -268,7 +268,11 @@ export function searchHSCodes(query: string, category?: string): HSCode[] {
 
 // Get unique categories
 export function getCategories(): string[] {
-  const categories = new Set(hsCodes.map(code => code.category).filter(Boolean));
+  const categories = new Set(
+    hsCodes
+      .map(code => code.category)
+      .filter((category): category is string => category !== undefined)
+  );
   return Array.from(categories).sort();
 }
 

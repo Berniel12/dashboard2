@@ -36,30 +36,28 @@ export function loadHTSData() {
   return htsData;
 }
 
-export function searchHTS(query: string, isCode: boolean = false): HTSEntry[] {
-  const data = loadHTSData();
+export function searchHTS(query: string): HTSEntry[] {
+  if (!query) return [];
   
-  if (isCode) {
+  const data = loadHTSData();
+  if (!data) return [];
+
+  if (/^\d/.test(query)) {
     // Search by code
     const normalizedQuery = query.replace(/\D/g, '');
     return data.filter(entry => entry.code.startsWith(normalizedQuery))
       .sort((a, b) => a.code.localeCompare(b.code));
   } else {
     // Search by description
-    const keywords = query.toLowerCase().split(' ').filter(k => k.length > 2);
-    return data.filter(entry => {
-      const description = entry.description.toLowerCase();
-      return keywords.some(keyword => description.includes(keyword));
-    }).sort((a, b) => {
-      // Sort by relevance (number of matching keywords)
-      const aMatches = keywords.filter(k => a.description.toLowerCase().includes(k)).length;
-      const bMatches = keywords.filter(k => b.description.toLowerCase().includes(k)).length;
-      return bMatches - aMatches;
-    });
+    const normalizedQuery = query.toLowerCase();
+    return data.filter(entry => 
+      entry.description.toLowerCase().includes(normalizedQuery)
+    ).sort((a, b) => a.code.localeCompare(b.code));
   }
 }
 
 export function getHTSDetails(code: string): HTSEntry | null {
   const data = loadHTSData();
+  if (!data) return null;
   return data.find(entry => entry.code === code) || null;
 } 

@@ -330,7 +330,7 @@ const integrations: Integration[] = [
 
 export default function CustomizePage() {
   const [selectedIntegrations, setSelectedIntegrations] = useState<Integration[]>([]);
-  const [activeCategory, setActiveCategory] = useState<'government' | 'shipping' | 'general'>('government');
+  const [activeCategory, setActiveCategory] = useState<'government' | 'shipping' | 'compliance' | 'communication' | 'financial' | 'general'>('government');
 
   const handleDragEnd = (result: any) => {
     const { source, destination } = result;

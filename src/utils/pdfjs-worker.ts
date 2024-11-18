@@ -1,6 +1,8 @@
 import { GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf.worker.entry';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 
 if (typeof window !== 'undefined') {
-  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.entry');
-} 
+  GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+}
+
+export { pdfjsLib }; 

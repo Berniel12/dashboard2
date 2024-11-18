@@ -18,6 +18,15 @@ interface ClientMetrics {
   };
 }
 
+interface MetricItemProps {
+  icon: any;
+  value: number;
+  label: string;
+  trend?: number;
+  isCurrency?: boolean;
+  suffix?: string;
+}
+
 const TopClientsWidget = () => {
   const [clients, setClients] = useState<ClientMetrics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,23 +107,24 @@ const TopClientsWidget = () => {
     }).format(value);
   };
 
-  const MetricItem = ({ icon: Icon, value, label, trend, isCurrency = false }: {
-    icon: any;
-    value: number;
-    label: string;
-    trend?: number;
-    isCurrency?: boolean;
-  }) => (
-    <div className="flex items-center gap-1 text-sm" title={label}>
-      <Icon className="w-4 h-4 text-gray-400" />
-      <span className="font-medium">
-        {isCurrency ? formatCurrency(value) : value}
-      </span>
-      {trend !== undefined && (
-        <span className={trend >= 0 ? 'text-green-500' : 'text-red-500'}>
-          {trend >= 0 ? '↑' : '↓'}
-        </span>
-      )}
+  const MetricItem = ({ icon: Icon, value, label, trend, isCurrency, suffix }: MetricItemProps) => (
+    <div className="flex items-center space-x-3">
+      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-gray-600" />
+      </div>
+      <div>
+        <div className="text-sm text-gray-600">{label}</div>
+        <div className="font-semibold">
+          {isCurrency && '$'}
+          {value.toLocaleString()}
+          {suffix && suffix}
+          {trend !== undefined && (
+            <span className={`ml-1 text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 
