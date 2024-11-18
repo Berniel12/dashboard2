@@ -15,9 +15,17 @@ interface AIClassification {
   }>;
 }
 
-export async function POST(request: NextRequest) {
+interface MatchedRecord {
+  code: string;
+  description: string;
+  confidence: number;
+}
+
+export const runtime = 'edge';
+
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { description } = body;
 
     if (!description) {
@@ -37,17 +45,17 @@ export async function POST(request: NextRequest) {
 
     // Search for relevant HTS codes based on description
     const keywords = description.toLowerCase().split(' ');
-    const matchedRecords = records
+    const matchedRecords: MatchedRecord[] = records
       .filter((record: any) => {
         const recordDesc = record['Description'].toLowerCase();
-        return keywords.some(keyword => recordDesc.includes(keyword));
+        return keywords.some((keyword: string) => recordDesc.includes(keyword));
       })
       .map((record: any) => ({
         code: record['HTS Number'].replace(/['"]/g, ''),
         description: record['Description'].replace(/['"]/g, ''),
         confidence: calculateConfidence(record['Description'].toLowerCase(), keywords)
       }))
-      .sort((a: any, b: any) => b.confidence - a.confidence);
+      .sort((a: MatchedRecord, b: MatchedRecord) => b.confidence - a.confidence);
 
     if (matchedRecords.length === 0) {
       return NextResponse.json({
@@ -64,7 +72,7 @@ export async function POST(request: NextRequest) {
       primaryCode: matchedRecords[0].code,
       primaryDescription: matchedRecords[0].description,
       confidence: matchedRecords[0].confidence,
-      alternativeCodes: matchedRecords.slice(1, 4).map(record => ({
+      alternativeCodes: matchedRecords.slice(1, 4).map((record: MatchedRecord) => ({
         code: record.code,
         description: record.description,
         confidence: record.confidence

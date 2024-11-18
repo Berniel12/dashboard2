@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Clock, 
   TrendingUp, 
@@ -16,6 +16,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { CircularProgress, LinearProgress } from '@mui/material';
 
 // Sample data for time-based metrics
 const timeMetricsData = [
@@ -55,7 +56,7 @@ const insights = [
     id: 3,
     type: 'opportunity',
     title: 'Customs Clearance Efficiency',
-    message: 'You're clearing shipments 15% faster than the industry average. Potential to handle 20% more volume.',
+    message: "You are clearing shipments 15% faster than the industry average. Potential to handle 20% more volume.",
     metric: '15%',
     trend: 'up',
   },
@@ -89,9 +90,99 @@ const bottlenecks = [
   },
 ];
 
+// Define analysis steps type
+type AnalysisStep = {
+  message: string;
+  progress: number;
+};
+
+const analysisSteps: AnalysisStep[] = [
+  { message: "Analyzing system logs...", progress: 15 },
+  { message: "Processing clearance times...", progress: 30 },
+  { message: "Calculating broker performance metrics...", progress: 45 },
+  { message: "Identifying bottlenecks...", progress: 60 },
+  { message: "Generating efficiency insights...", progress: 75 },
+  { message: "Comparing with industry benchmarks...", progress: 90 },
+  { message: "Finalizing analysis...", progress: 100 }
+];
+
 export default function InsightsPage() {
+  const [isAnalyzing, setIsAnalyzing] = useState(true);
+  const [currentStep, setCurrentStep] = useState<AnalysisStep>(analysisSteps[0]);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    let currentStepIndex = 0;
+    
+    const runAnalysis = () => {
+      const interval = setInterval(() => {
+        if (currentStepIndex < analysisSteps.length - 1) {
+          currentStepIndex++;
+          setCurrentStep(analysisSteps[currentStepIndex]);
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            setIsAnalyzing(false);
+            setShowContent(true);
+          }, 1000);
+        }
+      }, 800); // Adjust timing as needed
+
+      return () => clearInterval(interval);
+    };
+
+    const timer = setTimeout(runAnalysis, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isAnalyzing) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-4">
+            <div className="relative w-20 h-20 mx-auto">
+              <CircularProgress 
+                size={80}
+                thickness={4}
+                className="text-blue-500"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm font-medium text-gray-600">
+                  {Math.round(currentStep.progress)}%
+                </span>
+              </div>
+            </div>
+            
+            <h2 className="text-xl font-semibold text-gray-800">
+              Analyzing Your Data
+            </h2>
+            
+            <p className="text-sm text-gray-600 animate-pulse">
+              {currentStep.message}
+            </p>
+
+            <div className="w-full bg-gray-100 rounded-full h-2 mt-4">
+              <LinearProgress 
+                variant="determinate" 
+                value={currentStep.progress}
+                className="rounded-full"
+              />
+            </div>
+
+            <div className="text-xs text-gray-500 mt-2">
+              This may take a few moments...
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fade in the content when analysis is complete
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 transition-opacity duration-500 ${
+      showContent ? 'opacity-100' : 'opacity-0'
+    }`}>
       {/* Header */}
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <div className="flex justify-between items-center">

@@ -291,3 +291,9 @@ export function getHSCodesBySection(section: string): HSCode[] {
 export function getHSCodeByCode(code: string): HSCode | undefined {
   return hsCodes.find(item => item.code === code);
 }
+
+// Add the searchCodes export
+export const searchCodes = (query: string) => {
+  // Your search implementation
+  return []; // Return matching codes
+};

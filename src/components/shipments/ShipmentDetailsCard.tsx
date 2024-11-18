@@ -15,16 +15,20 @@ interface CustomsDocument {
   date?: string;
 }
 
-interface CargoClassification {
-  type: 'non-hazardous' | 'non-refrigerated' | 'container-20ft' | 'container-40ft' | 'dry-cargo' | 'stackable';
+export interface CargoClassification {
+  type: string;
   label: string;
 }
 
-interface ShipmentDetailsCardProps {
+export interface ShipmentDetailsCardProps {
   transportDetails: {
     vessel: string;
     voyage: string;
     eta: string;
+    containerCount: number;
+    containerType: string;
+    commodity: string;
+    bookingRef: string;
   };
   cargoDetails: {
     description: string;
@@ -35,16 +39,16 @@ interface ShipmentDetailsCardProps {
     classifications: CargoClassification[];
   };
   customsDetails: {
-    entryNumber: string;
-    declarationDate: string;
-    duties: string;
-    taxes: string;
-    documents: CustomsDocument[];
+    declarationType: string;
+    status: string;
+    clearanceDate?: string;
+    customsOffice: string;
+    declarationNumber?: string;
   };
   parties: {
-    exporter: PartyInfo;
-    importer: PartyInfo;
-    consignee: PartyInfo;
+    shipper: string;
+    consignee: string;
+    notifyParty?: string;
   };
 }
 

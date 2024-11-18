@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
 import * as pdfjs from 'pdfjs-dist';
+import { getDocument } from 'pdfjs-dist';
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -11,15 +12,12 @@ const openai = new OpenAI({
 const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
 
-// Configure standard fonts
-const standardFontDataUrl = 'node_modules/pdfjs-dist/standard_fonts/';
-await pdfjs.GlobalWorkerOptions.docConfig?.standardFontDataUrl?.set(standardFontDataUrl);
-
 // Configure PDF.js
 const pdfjsConfig = {
-  standardFontDataUrl,
-  disableFontFace: true, // Disable font loading
-  useSystemFonts: true   // Use system fonts instead
+  standardFontDataUrl: 'node_modules/pdfjs-dist/standard_fonts/',
+  cMapUrl: 'node_modules/pdfjs-dist/cmaps/',
+  cMapPacked: true,
+  disableFontFace: true
 };
 
 export async function POST(request: NextRequest) {
@@ -40,16 +38,14 @@ export async function POST(request: NextRequest) {
       bytes[i] = binaryString.charCodeAt(i);
     }
 
-    // Load PDF document with config
-    const pdfDocument = await pdfjs.getDocument({
-      data: bytes,
-      ...pdfjsConfig
-    }).promise;
-    
+    // Load PDF document
+    const loadingTask = getDocument({ data: bytes, ...pdfjsConfig });
+    const pdf = await loadingTask.promise;
+
     // Extract text from all pages
     let extractedText = '';
-    for (let i = 1; i <= pdfDocument.numPages; i++) {
-      const page = await pdfDocument.getPage(i);
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       const pageText = content.items.map((item: any) => item.str).join(' ');
       extractedText += pageText + '\n';

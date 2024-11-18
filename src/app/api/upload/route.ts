@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 
+// This is the only configuration we should have
+export const runtime = 'edge';
+
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -37,11 +40,11 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     console.log('Starting file upload processing');
 
-    const formData = await request.formData();
+    const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
@@ -138,7 +141,6 @@ Text to analyze: ${content}`
     // Handle both item and items formats
     let items = [];
     if (analysis.item) {
-      // Single item response
       items = [{
         name: analysis.item.fullItemName || analysis.item.full_item_name || analysis.item.name || 'Unknown Item',
         description: analysis.item.detailedDescription || analysis.item.detailed_description || analysis.item.description || 'No description available',
@@ -146,7 +148,6 @@ Text to analyze: ${content}`
         confidence: analysis.item.confidenceLevel || analysis.item.confidence_level || analysis.item.confidence || 'low'
       }];
     } else if (analysis.items) {
-      // Multiple items response
       items = analysis.items.map((item: any) => ({
         name: item.fullItemName || item.full_item_name || item.name || 'Unknown Item',
         description: item.detailedDescription || item.detailed_description || item.description || 'No description available',
@@ -155,7 +156,6 @@ Text to analyze: ${content}`
       }));
     }
 
-    // Return standardized format
     const standardizedAnalysis = {
       success: true,
       analysis: {
@@ -185,11 +185,4 @@ Text to analyze: ${content}`
       { status: error.status || 500 }
     );
   }
-}
-
-export const config = {
-  runtime: 'edge',
-  unstable_allowDynamic: [
-    '/node_modules/pdfjs-dist/**',
-  ],
-}; 
+} 

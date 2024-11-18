@@ -11,7 +11,10 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@clerk/nextjs": "^4.29.9",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@hello-pangea/dnd": "^17.0.0",
+    "@mui/material": "^6.1.7",
     "@types/react-simple-maps": "^3.0.6",
     "antd": "^5.22.1",
     "csv-parse": "^5.5.6",
@@ -26,7 +29,9 @@
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-simple-maps": "^3.0.0",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "@types/dom-speech-recognition": "^0.0.1",
+    "@types/web-audio-api": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.17.6",

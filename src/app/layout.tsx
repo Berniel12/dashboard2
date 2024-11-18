@@ -3,6 +3,7 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import VirtualAssistant from '@/components/VirtualAssistant/VirtualAssistant';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
           <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-theme duration-250 ease-theme">
               {children}
+              <VirtualAssistant />
             </div>
           </ThemeProvider>
         </body>
